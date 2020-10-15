@@ -18,11 +18,11 @@ class TimeSettings extends React.Component {
             <div className="row">
               <div className="column column-10"></div>
               <div className="column column-40">
-                <label for="nameField">First Turn: </label>
+                <label htmlFor="nameField">First Turn: </label>
                 <input type="text" placeholder="mm:ss" id="firstTurn" value="6:00" />
             </div>
             <div className="column column-40">
-              <label for="nameField">Other Turns: </label>
+              <label htmlFor="nameField">Other Turns: </label>
                 <input type="text" placeholder="mm:ss" id="turn" value="4:00" />
             </div>
             <div className="column column-10" />
@@ -71,8 +71,6 @@ class TimeList extends React.Component {
 }
 
 class TimerLogic extends React.Component {
-
-
   constructor(props) {
     super(props);
 
@@ -292,8 +290,6 @@ class TimerLogic extends React.Component {
       };
     });
   }
-
-
 
   runBlue() {
     let funcMap = {

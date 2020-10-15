@@ -2,7 +2,6 @@ import React from 'react';
 import TimerLogic from './TimerLogic';
 import LinkForm from  './LinkForm';
 
-
 function GameLink(props) {
   return (
     <div className="row">
@@ -26,24 +25,35 @@ class App extends React.Component {
       gameLink: null,
       suffix: null,
     };
+
+    if (props.suffix != null) {
+      this.state.gameLink = "https://codenames.game/room/" + props.suffix;
+      this.state.suffix = props.suffix;
+    }
   }
 
 
   setLink(link) {
     let tokens = link.split("/")
+    // TODO
     if (tokens.length === 0) {
-      // error
+      return;
     }
-    // check url
+    try {
+      new URL(link);
+    } catch (_) {
+      return;
+    }
     let last = tokens[tokens.length - 1]
     this.setState({
       gameLink: link,
       suffix: last,
     })
+    window.location.href = last;
   }
 
-  render() {
 
+  render() {
     return (
       <div className="App">
         <div className="container">
@@ -54,9 +64,15 @@ class App extends React.Component {
             <div className="column"><center><h1>Codenames Timer</h1></center></div>
           </div>
 
-          {this.state.suffix === null ? <LinkForm update={this.setLink} /> : ""}
-          {this.state.suffix !== null ? <GameLink href={this.state.gameLink} name={this.state.suffix} /> : ""}
-          {this.state.suffix === null ? <TimerLogic linkSetter={this.setLink}/>: ""}
+          {this.state.suffix === null
+            ? <LinkForm update={this.setLink} />
+            : ""}
+          {this.state.suffix !== null
+            ? <GameLink href={this.state.gameLink} name={this.state.suffix} />
+            : ""}
+          {this.state.suffix !== null
+            ? <TimerLogic linkSetter={this.setLink}/>
+            : ""}
         </div>
       </div>
     );

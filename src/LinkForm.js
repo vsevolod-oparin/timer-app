@@ -20,7 +20,10 @@ class LinkForm extends React.Component {
             <div className="row">
               <div className="column column-20" />
               <div className="column column-50">
-                <input type="text" placeholder="https://codenames.game/room/tik-tak-toe" id="gameLink" />
+                <input
+                  type="text"
+                  placeholder="https://codenames.game/room/tik-tak-toe"
+                  id="gameLink" />
               </div>
             <div className="column column-10">
                 <input className="button" type="submit" value="Send" />
