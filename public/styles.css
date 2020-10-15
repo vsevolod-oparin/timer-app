@@ -1,0 +1,51 @@
+.button, input[type='submit'] {
+	background-color: #00ce94;
+	border-color: #00ce94;
+}
+
+.button.button-outline {
+	color: #00ce94;
+}
+
+a {
+	color: #00ce94;
+}
+
+.button-red  {
+    background-color: #f33b3b;
+    border-color: #f33b3b;
+}
+
+.button-orange {
+	background-color: #ff8c47;
+	border-color:  #ff8c47;
+}
+
+.button-disable {
+	background-image: none;
+	opacity: .4;
+	cursor: not-allowed;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	pointer-events: none;
+}
+
+.button-blue {
+    background-color: #2949e4;
+    border-color: #2949e4;
+}
+
+
+.button-black {
+  background-color: black;
+  border-color: black;
+}
+
+
+.record-red  {
+    color: #f33b3b;
+}
+
+.record-blue  {
+    color: #2949e4;
+}
