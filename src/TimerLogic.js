@@ -42,7 +42,7 @@ class TimeList extends React.Component {
     const listItems = this.props.story.map((token) =>
       <tr key={token.idx}>
         <td>
-          <b className={"record-" + token.team}>{token.team == 'red' ? 'R' : 'B'} <NiceTime time={token.time}/></b>
+          <b className={"record-" + token.team}>{token.team === 'red' ? 'R' : 'B'} <NiceTime time={token.time}/></b>
         </td>
       </tr>
     );
@@ -87,6 +87,7 @@ class TimerLogic extends React.Component {
     this.br2rr = this.br2rr.bind(this);
     this.bp2rr = this.bp2rr.bind(this);
     this.rp2br = this.rp2br.bind(this);
+    this.nope  = function() {};
 
     this.runRed = this.runRed.bind(this);
     this.runBlue = this.runBlue.bind(this);
@@ -298,6 +299,7 @@ class TimerLogic extends React.Component {
     let funcMap = {
       0: this.s2br,
       1: this.rr2br,
+      2: this.nope,
       3: this.rp2br,
       4: this.bp2br
     };
@@ -307,6 +309,7 @@ class TimerLogic extends React.Component {
   runRed() {
     let funcMap = {
       0: this.s2rr,
+      1: this.nope,
       2: this.br2rr,
       3: this.rp2rr,
       4: this.bp2rr
@@ -316,6 +319,9 @@ class TimerLogic extends React.Component {
 
   resume() {
     let funcMap = {
+      0: this.nope,
+      1: this.nope,
+      2: this.nope,
       3: this.rp2rr,
       4: this.bp2br
     };
@@ -324,8 +330,11 @@ class TimerLogic extends React.Component {
 
   pause() {
     let funcMap = {
+      0: this.nope,
       1: this.rr2rp,
-      2: this.br2bp
+      2: this.br2bp,
+      3: this.nope,
+      4: this.nope,
     };
     funcMap[this.state.stateId]();
   }
@@ -346,17 +355,17 @@ class TimerLogic extends React.Component {
   render() {
     let settingsButton;
     if (this.state.settingsOff) {
-      settingsButton = <a
+      settingsButton = <button
         className="button button-outline"
         onClick={this.settingsToggleOff}>
         Settings
-      </a>
+      </button>
     } else {
-      settingsButton = <a
+      settingsButton = <button
         className="button"
         onClick={this.settingsToggleOn}>
         Save
-      </a>
+      </button>
     }
 
     let countedTime = this.tm() - this.state.startedTime;
@@ -378,43 +387,36 @@ class TimerLogic extends React.Component {
       : blueTime;
 
 
-    let pauseClass = this.state.stateId == 0
+    let pauseClass = this.state.stateId === 0
       ? "button button-outline button-disable"
       : "button button-outline";
     console.log(pauseClass)
     let pauseButton =
       <div className="column column-10">
         <center>
-          <a className={pauseClass} onClick={this.pause}>
+          <button className={pauseClass} onClick={this.pause}>
             Pause
-          </a>
+          </button>
         </center>
       </div>;
     let resetButton =
       <div className="column column-10">
-          <a className="button button-outline" onClick={this.reset}>
+          <button className="button button-outline" onClick={this.reset}>
             Reset
-          </a>
+          </button>
       </div>;
     let resumeButton =
       <div className="column column-20">
-          <a className="button" onClick={this.resume}>
+          <button className="button" onClick={this.resume}>
             Resume
-          </a>
+          </button>
       </div>;
-
-    let buttonsOnPause =
-      <div className="buttonsOnPause">
-        {resumeButton}
-        {resetButton}
-      </div>;
-
 
     return (
       <div className="timer-logic">
         <DoubleTimer
-          blueActive={this.state.stateId != 2 && this.state.stateId != 4}
-          redActive={this.state.stateId != 1 && this.state.stateId != 3}
+          blueActive={this.state.stateId !== 2 && this.state.stateId !== 4}
+          redActive={this.state.stateId !== 1 && this.state.stateId !== 3}
           redTime={redTime}
           blueTime={blueTime}
           redClick={this.runRed}

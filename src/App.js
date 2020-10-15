@@ -31,7 +31,7 @@ class App extends React.Component {
 
   setLink(link) {
     let tokens = link.split("/")
-    if (tokens.length == 0) {
+    if (tokens.length === 0) {
       // error
     }
     // check url
@@ -56,7 +56,7 @@ class App extends React.Component {
 
           {this.state.suffix === null ? <LinkForm update={this.setLink} /> : ""}
           {this.state.suffix !== null ? <GameLink href={this.state.gameLink} name={this.state.suffix} /> : ""}
-          {this.state.suffix !== null ? <TimerLogic linkSetter={this.setLink}/>: ""}
+          {this.state.suffix === null ? <TimerLogic linkSetter={this.setLink}/>: ""}
         </div>
       </div>
     );

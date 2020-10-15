@@ -1,5 +1,3 @@
-import React from 'react';
-
 function NiceTime(props) {
   let ms = props.time;
 
