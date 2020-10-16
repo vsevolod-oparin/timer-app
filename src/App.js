@@ -14,7 +14,6 @@ function GameLink(props) {
   );
 }
 
-
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -25,7 +24,6 @@ class App extends React.Component {
       gameLink: null,
       suffix: null,
     };
-
     if (props.suffix != null) {
       this.state.gameLink = "https://codenames.game/room/" + props.suffix;
       this.state.suffix = props.suffix;
@@ -63,16 +61,16 @@ class App extends React.Component {
           <div className="row">
             <div className="column"><center><h1>Codenames Timer</h1></center></div>
           </div>
-
           {this.state.suffix === null
             ? <LinkForm update={this.setLink} />
-            : ""}
-          {this.state.suffix !== null
-            ? <GameLink href={this.state.gameLink} name={this.state.suffix} />
-            : ""}
-          {this.state.suffix !== null
-            ? <TimerLogic linkSetter={this.setLink}/>
-            : ""}
+            : <div className="main-timer">
+                <GameLink href={this.state.gameLink} name={this.state.suffix} />
+                <TimerLogic
+                  linkSetter={this.setLink}
+                  room={this.state.suffix}
+                />
+              </div>
+          }
         </div>
       </div>
     );

@@ -1,74 +1,14 @@
 import React from 'react';
 import DoubleTimer from  './DoubleTimer';
-import NiceTime from  './NiceTime';
-import LinkForm from  './LinkForm';
-
-class TimeSettings extends React.Component {
-  render() {
-    return (
-      <form>
-        <fieldset>
-          <div className="container">
-            <div className="row">
-              <div className="column"><h1 /></div>
-            </div>
-            <div className="row">
-              <div className="column"><center><h2>Time Settings</h2></center></div>
-            </div>
-            <div className="row">
-              <div className="column column-10"></div>
-              <div className="column column-40">
-                <label htmlFor="nameField">First Turn: </label>
-                <input type="text" placeholder="mm:ss" id="firstTurn" value="6:00" />
-            </div>
-            <div className="column column-40">
-              <label htmlFor="nameField">Other Turns: </label>
-                <input type="text" placeholder="mm:ss" id="turn" value="4:00" />
-            </div>
-            <div className="column column-10" />
-          </div>
-        </div>
-        </fieldset>
-
-        <LinkForm update={this.props.update}/>
-      </form>
-    );
-  }
-}
+import TimeList from './TimeList';
+import TimeSettings from './TimeSettings';
+import socketIOClient from "socket.io-client";
+import SoundBlaster from './SoundBlaster';
 
 
-class TimeList extends React.Component {
-  render() {
-    const listItems = this.props.story.map((token) =>
-      <tr key={token.idx}>
-        <td>
-          <b className={"record-" + token.team}>{token.team === 'red' ? 'R' : 'B'} <NiceTime time={token.time}/></b>
-        </td>
-      </tr>
-    );
+const ENDPOINT = "http://44.232.186.40:3001";
+const UI_UPDATE_INTERVAL = 10;
 
-    return (
-      <div className="row">
-        <div className="column column-10"></div>
-        <div className="column">
-          <center>
-            <table>
-              <thead>
-                <tr>
-                  <th>Steps</th>
-                </tr>
-              </thead>
-              <tbody>
-                {listItems}
-              </tbody>
-            </table>
-          </center>
-        </div>
-        <div className="column column-10"></div>
-      </div>
-    );
-  }
-}
 
 class TimerLogic extends React.Component {
   constructor(props) {
@@ -97,19 +37,74 @@ class TimerLogic extends React.Component {
     this.tick = this.tick.bind(this);
     this.settingsToggleOn = this.settingsToggleOn.bind(this);
     this.settingsToggleOff = this.settingsToggleOff.bind(this);
+    this.updateTurnTimes = this.updateTurnTimes.bind(this);
+    this.computeTimes = this.computeTimes.bind(this);
+    this.updateInterval = this.updateInterval.bind(this);
 
-    this.updateTime = 10;
+    this.updateTime = UI_UPDATE_INTERVAL;
     this.intervalId = null;
+    this.updatePatch = {};
 
-    this.state = {
-      stateId: 0,
-      addedTime: 0,
-      startedTime: 0,
-      iid: null,
-      story: [],
-      settingsOff: true,
-      ctm: this.tm()
-    };
+    if (this.props.externalState != null) {
+      this.state = this.props.externalState;
+      this.updateInterval();
+    } else {
+      this.state = {
+        stateId: 0,
+        addedTime: 0,
+        startedTime: 0,
+        iid: null,
+        story: [],
+        settingsOff: true,
+        ctm: this.tm(),
+        firstTurn: 6 * 60 * 1000,
+        turn: 4 * 60 * 1000,
+        room: this.props.rooms
+      };
+    }
+  }
+
+  componentDidMount() {
+    this.socket = socketIOClient(ENDPOINT);
+    this.socket.on('state-update', data => {
+      if ("settingsOff" in data) {
+        delete data.settingsOff
+        delete data.iid;
+      }
+      this.setState(data);
+      this.updateInterval();
+    });
+    this.socket.emit('join-room', this.props.room, this.state);
+  }
+
+  updateInterval() {
+    if (this.state.stateId === 1 || this.state.stateId === 2) {
+      if (this.state.iid == null) {
+        this.setState({iid: setInterval(this.tick, this.updateTime)});
+      }
+    } else {
+      if (this.state.iid != null) {
+        clearInterval(this.state.iid);
+        this.setState({iid: null});
+      }
+    }
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (prevState.stateId !== this.state.stateId ||
+        prevState.turn !== this.state.turn ||
+        prevState.firstTurn !== this.state.firstTurn) {
+      this.socket.emit("state-update", this.state);
+    }
+    this.updateInterval();
+  }
+
+  componentWillUnmount() {
+    this.socket.disconnect();
+  }
+
+  updateTurnTimes(id, value) {
+    this.updatePatch[id] = value;
   }
 
   tick() {
@@ -122,28 +117,21 @@ class TimerLogic extends React.Component {
 
   any2s() {
     console.log("a2s");
-    if (this.state.iid !== null) { // runRed or runBlue
-      clearInterval(this.state.iid);
-    }
     this.setState(function(state) {
-      console.log(state.iid);
       return {
         stateId: 0, // start
-        story: [],
-        iid: null,
         addedTime: 0,
+        startedTime: 0,
+        story: [],
       };
     });
   }
 
   s2rr() {
     console.log("s2rr");
-    let iid = setInterval(this.tick, this.updateTime);
     this.setState(function(state) {
-      console.log(iid);
       return {
         stateId: 1, // runRed
-        iid: iid,
         startedTime: this.tm()
       };
     });
@@ -151,11 +139,9 @@ class TimerLogic extends React.Component {
 
   s2br() {
     console.log("s2br");
-    let iid = setInterval(this.tick, this.updateTime);
     this.setState(function(state) {
       return {
         stateId: 2, // runBlue
-        iid: iid,
         startedTime: this.tm()
       };
     });
@@ -163,7 +149,6 @@ class TimerLogic extends React.Component {
 
   rr2rp() {
     console.log("rr2rp");
-    clearInterval(this.state.iid);
     this.setState(function(state) {
       let addedTime = state.addedTime + this.tm() - state.startedTime;
       return {
@@ -176,11 +161,9 @@ class TimerLogic extends React.Component {
 
   rp2rr() {
     console.log("rp2rr");
-    let iid = setInterval(this.tick, this.updateTime);
     this.setState(function(state) {
       return {
         stateId: 1, // runRed
-        iid: iid,
         startedTime: this.tm()
       };
     });
@@ -188,24 +171,20 @@ class TimerLogic extends React.Component {
 
   br2bp() {
     console.log("br2bp");
-    clearInterval(this.state.iid);
     this.setState(function(state) {
       let addedTime = state.addedTime + this.tm() - state.startedTime;
       return {
         stateId: 4, // pauseRed
         addedTime: addedTime,
-        iid: null,
       };
     });
   }
 
   bp2br() {
     console.log("bp2br");
-    let iid = setInterval(this.tick, this.updateTime);
     this.setState(function(state) {
       return {
         stateId: 2, // runRed
-        iid: iid,
         startedTime: this.tm()
       };
     });
@@ -251,7 +230,6 @@ class TimerLogic extends React.Component {
 
   bp2rr() {
     console.log("bp2rr");
-    let iid = setInterval(this.tick, this.updateTime);
     this.setState(function(state) {
       let story = state.story;
       let ev = {
@@ -263,7 +241,6 @@ class TimerLogic extends React.Component {
       return {
         stateId: 1, // runRed
         story: story,
-        iid: iid,
         startedTime: this.tm(),
         addedTime: 0
       };
@@ -272,7 +249,6 @@ class TimerLogic extends React.Component {
 
   rp2br() {
     console.log("rp2br");
-    let iid = setInterval(this.tick, this.updateTime);
     this.setState(function(state) {
       let story = state.story;
       let ev = {
@@ -284,7 +260,6 @@ class TimerLogic extends React.Component {
       return {
         stateId: 2, // runRed
         story: story,
-        iid: iid,
         startedTime: this.tm(),
         addedTime: 0
       };
@@ -341,29 +316,16 @@ class TimerLogic extends React.Component {
   }
 
   settingsToggleOn() {
-    this.setState({settingsOff: true});
+    this.updatePatch.settingsOff = true;
+    this.setState(this.updatePatch);
+    this.updatePatch = {};
   }
 
   settingsToggleOff() {
     this.setState({settingsOff: false});
   }
 
-  render() {
-    let settingsButton;
-    if (this.state.settingsOff) {
-      settingsButton = <button
-        className="button button-outline"
-        onClick={this.settingsToggleOff}>
-        Settings
-      </button>
-    } else {
-      settingsButton = <button
-        className="button"
-        onClick={this.settingsToggleOn}>
-        Save
-      </button>
-    }
-
+  computeTimes() {
     let countedTime = this.tm() - this.state.startedTime;
 
     let redTime = 0;
@@ -382,11 +344,33 @@ class TimerLogic extends React.Component {
       ? this.state.addedTime
       : blueTime;
 
+    return [redTime, blueTime];
+  }
+
+  render() {
+    let settingsButton;
+    if (this.state.settingsOff) {
+      settingsButton = <button
+        className="button button-outline"
+        onClick={this.settingsToggleOff}>
+        Settings
+      </button>
+    } else {
+      settingsButton = <button
+        className="button"
+        onClick={this.settingsToggleOn}>
+        Save
+      </button>
+    }
+
+    let [redTime, blueTime] = this.computeTimes();
+    let turnTime = this.state.story.length === 0
+      ? this.state.firstTurn
+      : this.state.turn;
 
     let pauseClass = this.state.stateId === 0
       ? "button button-outline button-disable"
       : "button button-outline";
-    console.log(pauseClass)
     let pauseButton =
       <div className="column column-10">
         <center>
@@ -410,6 +394,7 @@ class TimerLogic extends React.Component {
 
     return (
       <div className="timer-logic">
+        <SoundBlaster time={(redTime + blueTime)} turn={turnTime}/>
         <DoubleTimer
           blueActive={this.state.stateId !== 2 && this.state.stateId !== 4}
           redActive={this.state.stateId !== 1 && this.state.stateId !== 3}
@@ -437,7 +422,12 @@ class TimerLogic extends React.Component {
         </div>
         {this.state.settingsOff
           ? ""
-          : <TimeSettings  update={this.props.linkSetter}/>
+          : <TimeSettings
+              update={this.props.linkSetter}
+              timeUpdate={this.updateTurnTimes}
+              firstTurn={this.state.firstTurn}
+              turn={this.state.turn}
+            />
         }
       </div>
     );
