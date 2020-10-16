@@ -4,6 +4,7 @@ import TimeList from './TimeList';
 import TimeSettings from './TimeSettings';
 import socketIOClient from "socket.io-client";
 import SoundBlaster from './SoundBlaster';
+var ntp = require('socket-ntp');
 
 
 const ENDPOINT = "http://44.232.186.40:3001";
@@ -59,13 +60,15 @@ class TimerLogic extends React.Component {
         ctm: this.tm(),
         firstTurn: 6 * 60 * 1000,
         turn: 4 * 60 * 1000,
-        room: this.props.rooms
+        room: this.props.rooms,
+        network: false
       };
     }
   }
 
   componentDidMount() {
     this.socket = socketIOClient(ENDPOINT);
+
     this.socket.on('state-update', data => {
       if ("settingsOff" in data) {
         delete data.settingsOff
@@ -74,7 +77,12 @@ class TimerLogic extends React.Component {
       this.setState(data);
       this.updateInterval();
     });
-    this.socket.emit('join-room', this.props.room, this.state);
+    if (!this.state.network) {
+      this.socket.emit('join-room', this.props.room, this.state);
+    }
+
+    //console.log("Offset: " + ntp.offset());
+
   }
 
   updateInterval() {
@@ -91,10 +99,12 @@ class TimerLogic extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState, snapshot) {
-    if (prevState.stateId !== this.state.stateId ||
-        prevState.turn !== this.state.turn ||
-        prevState.firstTurn !== this.state.firstTurn) {
-      this.socket.emit("state-update", this.state);
+    if (!this.state.network) {
+      if (prevState.stateId !== this.state.stateId ||
+          prevState.turn !== this.state.turn ||
+          prevState.firstTurn !== this.state.firstTurn) {
+        this.socket.emit("state-update", this.state);
+      }
     }
     this.updateInterval();
   }
@@ -123,6 +133,7 @@ class TimerLogic extends React.Component {
         addedTime: 0,
         startedTime: 0,
         story: [],
+        network: false
       };
     });
   }
@@ -132,7 +143,8 @@ class TimerLogic extends React.Component {
     this.setState(function(state) {
       return {
         stateId: 1, // runRed
-        startedTime: this.tm()
+        startedTime: this.tm(),
+        network: false
       };
     });
   }
@@ -142,7 +154,8 @@ class TimerLogic extends React.Component {
     this.setState(function(state) {
       return {
         stateId: 2, // runBlue
-        startedTime: this.tm()
+        startedTime: this.tm(),
+        network: false
       };
     });
   }
@@ -155,6 +168,7 @@ class TimerLogic extends React.Component {
         stateId: 3, // pauseRed
         addedTime: addedTime,
         iid: null,
+        network: false
       };
     });
   }
@@ -164,7 +178,8 @@ class TimerLogic extends React.Component {
     this.setState(function(state) {
       return {
         stateId: 1, // runRed
-        startedTime: this.tm()
+        startedTime: this.tm(),
+        network: false
       };
     });
   }
@@ -176,6 +191,7 @@ class TimerLogic extends React.Component {
       return {
         stateId: 4, // pauseRed
         addedTime: addedTime,
+        network: false
       };
     });
   }
@@ -185,7 +201,8 @@ class TimerLogic extends React.Component {
     this.setState(function(state) {
       return {
         stateId: 2, // runRed
-        startedTime: this.tm()
+        startedTime: this.tm(),
+        network: false
       };
     });
   }
@@ -204,7 +221,8 @@ class TimerLogic extends React.Component {
         stateId: 2, // runBlue
         story: story,
         startedTime: this.tm(),
-        addedTime: 0
+        addedTime: 0,
+        network: false
       };
     });
   }
@@ -223,7 +241,8 @@ class TimerLogic extends React.Component {
         stateId: 1, // runRed
         story: story,
         startedTime: this.tm(),
-        addedTime: 0
+        addedTime: 0,
+        network: false
       };
     });
   }
@@ -242,7 +261,8 @@ class TimerLogic extends React.Component {
         stateId: 1, // runRed
         story: story,
         startedTime: this.tm(),
-        addedTime: 0
+        addedTime: 0,
+        network: false
       };
     });
   }
@@ -261,7 +281,8 @@ class TimerLogic extends React.Component {
         stateId: 2, // runRed
         story: story,
         startedTime: this.tm(),
-        addedTime: 0
+        addedTime: 0,
+        network: false
       };
     });
   }
@@ -402,6 +423,7 @@ class TimerLogic extends React.Component {
           blueTime={blueTime}
           redClick={this.runRed}
           blueClick={this.runBlue}
+          start={this.state.stateId == 0}
         />
 
         <TimeList story={this.state.story}/>

@@ -26,12 +26,12 @@ class DoubleTimer extends React.Component {
 
     let redButton =
       <button className={redClass} onClick={this.props.redClick} href="#">
-        Red Team finished
+        Red Team {this.props.start ? 'starts' : 'finished'}
       </button>;
 
     let blueButton =
       <button className={blueClass} onClick={this.props.blueClick}  href="#">
-        Blue Team finished
+        Blue Team {this.props.start ? 'starts' : 'finished'}
       </button>;
 
     return (

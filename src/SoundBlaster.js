@@ -34,13 +34,13 @@ class SoundBlaster extends React.Component {
       if (prevProps.time !== 0 &&
           prevProps.time < timeline[i][0] &&
           this.props.time >= timeline[i][0]) {
-        //console.log(timeline[i][1]);
         this.audio = new Audio(timeline[i][1]);
         this.audio.play();
       }
     }
-    if (this.props.time === 0 && this.audio != null) {
+    if (this.props.time <= 1000 && this.audio != null) {
       this.audio.pause();
+      this.audio = null;
     }
   }
 
