@@ -4,7 +4,7 @@ import TimeList from './TimeList';
 import TimeSettings from './TimeSettings';
 import socketIOClient from "socket.io-client";
 import SoundBlaster from './SoundBlaster';
-var ntp = require('socket-ntp');
+import ntp from 'socket-ntp/client/ntp';
 
 
 const ENDPOINT = "http://44.232.186.40:3001";
@@ -68,11 +68,18 @@ class TimerLogic extends React.Component {
 
   componentDidMount() {
     this.socket = socketIOClient(ENDPOINT);
+    this.socket.emit('ntp:client_sync', { t0 : Date.now() });
+    ntp.init(this.socket, {interval: 1000});
 
     this.socket.on('state-update', data => {
       if ("settingsOff" in data) {
         delete data.settingsOff
-        delete data.iid;
+      }
+      delete data.iid;
+      let offset = ntp.offset();
+      if (!Number.isNaN(offset)) {
+        data.startedTime += offset;
+        data.ctm += offset;
       }
       this.setState(data);
       this.updateInterval();
@@ -80,8 +87,6 @@ class TimerLogic extends React.Component {
     if (!this.state.network) {
       this.socket.emit('join-room', this.props.room, this.state);
     }
-
-    //console.log("Offset: " + ntp.offset());
 
   }
 
@@ -103,7 +108,13 @@ class TimerLogic extends React.Component {
       if (prevState.stateId !== this.state.stateId ||
           prevState.turn !== this.state.turn ||
           prevState.firstTurn !== this.state.firstTurn) {
-        this.socket.emit("state-update", this.state);
+        let data = JSON.parse(JSON.stringify(this.state));
+        let offset = ntp.offset();
+        if (!Number.isNaN(offset)) {
+          data.startedTime -= offset;
+          data.ctm -= offset;
+        }
+        this.socket.emit("state-update", data);
       }
     }
     this.updateInterval();
@@ -423,7 +434,7 @@ class TimerLogic extends React.Component {
           blueTime={blueTime}
           redClick={this.runRed}
           blueClick={this.runBlue}
-          start={this.state.stateId == 0}
+          start={this.state.stateId === 0}
         />
 
         <TimeList story={this.state.story}/>
