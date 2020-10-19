@@ -431,9 +431,10 @@ class TimerLogic extends React.Component {
           blueActive={this.state.stateId !== 2 && this.state.stateId !== 4}
           redActive={this.state.stateId !== 1 && this.state.stateId !== 3}
           redTime={redTime}
+          blueClick={this.runBlue}
           blueTime={blueTime}
           redClick={this.runRed}
-          blueClick={this.runBlue}
+          turnTime={turnTime}
           start={this.state.stateId === 0}
         />
 

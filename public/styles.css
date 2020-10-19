@@ -47,3 +47,8 @@ a {
 .record-blue  {
     color: #2949e4;
 }
+
+.time-clock-out {
+		background-color: #ffcece;
+		border-radius: .4rem;
+}

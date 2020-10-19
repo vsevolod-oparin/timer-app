@@ -17,7 +17,7 @@ class SoundBlaster extends React.Component {
 
     let timeline = [
       [props.turn - 30 * sec, sec30],
-      [props.turn - 5 * sec, c5]
+      [props.turn - 5.1 * sec, c5]
     ];
     var step = 60 * sec;
     var moment = step;

@@ -3,11 +3,14 @@ import NiceTime from  './NiceTime';
 
 
 function NiceTimeHeader(props) {
+  let className = props.time === 0 ? 'time-clock-out' : '';
   return (
     <center>
-      <h2>
-        <NiceTime time={props.time} />
-      </h2>
+      <div class={className}>
+        <h2>
+          <NiceTime time={props.time} />
+        </h2>
+      </div>
     </center>
   );
 }
@@ -34,15 +37,18 @@ class DoubleTimer extends React.Component {
         Blue Team {this.props.start ? 'starts' : 'finished'}
       </button>;
 
+    let redTime = Math.max(this.props.turnTime - this.props.redTime, 0);
+    let blueTime = Math.max(this.props.turnTime - this.props.blueTime, 0);
+
     return (
       <div className="doubleTimer">
         <div className="row">
           <div className="column column-10" />
           <div className="column">
-            <NiceTimeHeader time={this.props.redTime} />
+            <NiceTimeHeader time={redTime} />
           </div>
           <div className="column">
-            <NiceTimeHeader time={this.props.blueTime} />
+            <NiceTimeHeader time={blueTime} />
           </div>
           <div className="column column-10" />
         </div>
