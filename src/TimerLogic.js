@@ -5,6 +5,7 @@ import TimeSettings from './TimeSettings';
 import socketIOClient from "socket.io-client";
 import SoundBlaster from './SoundBlaster';
 import ntp from 'socket-ntp/client/ntp';
+import {isAndroid, isIOS} from "react-device-detect";
 
 
 const ENDPOINT = "http://44.232.186.40:3001";
@@ -85,6 +86,7 @@ class TimerLogic extends React.Component {
       this.updateInterval();
     });
     if (!this.state.network) {
+      console.log("Joing the room!");
       this.socket.emit('join-room', this.props.room, this.state);
     }
 
@@ -424,9 +426,14 @@ class TimerLogic extends React.Component {
           </button>
       </div>;
 
+    let mobile = isAndroid || isIOS;
+
+    let bluster = mobile
+      ? ""
+      : <SoundBlaster time={(redTime + blueTime)} turn={turnTime}/>;
     return (
       <div className="timer-logic">
-        <SoundBlaster time={(redTime + blueTime)} turn={turnTime}/>
+        {bluster}
         <DoubleTimer
           blueActive={this.state.stateId !== 2 && this.state.stateId !== 4}
           redActive={this.state.stateId !== 1 && this.state.stateId !== 3}

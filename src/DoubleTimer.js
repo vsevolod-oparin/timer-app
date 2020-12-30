@@ -6,7 +6,7 @@ function NiceTimeHeader(props) {
   let className = props.time === 0 ? 'time-clock-out' : '';
   return (
     <center>
-      <div class={className}>
+      <div className={className}>
         <h2>
           <NiceTime time={props.time} />
         </h2>
@@ -29,12 +29,12 @@ class DoubleTimer extends React.Component {
 
     let redButton =
       <button className={redClass} onClick={this.props.redClick} href="#">
-        Red Team {this.props.start ? 'starts' : 'finished'}
+        Red Team{this.props.start ? ' starts' : "'s turn"}
       </button>;
 
     let blueButton =
       <button className={blueClass} onClick={this.props.blueClick}  href="#">
-        Blue Team {this.props.start ? 'starts' : 'finished'}
+        Blue Team{this.props.start ? ' starts' : "'s turn"}
       </button>;
 
     let redTime = Math.max(this.props.turnTime - this.props.redTime, 0);
