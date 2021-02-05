@@ -445,6 +445,7 @@ class TimerLogic extends React.Component {
           start={this.state.stateId === 0}
         />
 
+
         <TimeList story={this.state.story}/>
 
         <div className="row">
