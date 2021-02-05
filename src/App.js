@@ -3,11 +3,6 @@ import TimerLogic from './TimerLogic';
 import LinkForm from  './LinkForm';
 import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-dom";
 
-<<<<<<< Updated upstream
-=======
-import People from './People';
-
->>>>>>> Stashed changes
 function GameLink(props) {
   return (
     <div className="row">
@@ -31,7 +26,7 @@ class App extends React.Component {
       suffix: null,
     };
     if (props.suffix != null) {
-      this.state.gameLink = "https://codenames.game/room/" + props.suffix;
+      this.state.gameLink = "https://codenames.game/room/" + props.suffix + '?#';
       this.state.suffix = props.suffix;
     }
   }
@@ -48,7 +43,8 @@ class App extends React.Component {
     } catch (_) {
       return;
     }
-    let last = tokens[tokens.length - 1]
+    let last = tokens[tokens.length - 1];
+    last = last.split('?')[0];
     this.setState({
       gameLink: link,
       suffix: last,
@@ -69,16 +65,9 @@ class App extends React.Component {
 
           <Router>
             <Switch>
-              <Route path="/people">
-                <People />
-              </Route>
               <Route path="/timer-app/:room">
                 <GameLink href={this.state.gameLink} name={this.state.suffix} />
                 <TimerLogic linkSetter={this.setLink}/>
-                <div className="row">
-                  <div className="column"><h1><span/></h1></div>
-                </div>
-                <People />
               </Route>
               <Route path="/timer-app">
                 {this.state.suffix

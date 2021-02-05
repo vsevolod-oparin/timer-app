@@ -25,12 +25,12 @@ class LinkForm extends React.Component {
                   placeholder="https://codenames.game/room/tik-tak-toe"
                   id="gameLink" />
               </div>
-            <div className="column column-10">
-                <input className="button" type="submit" value="Send" />
+              <div className="column column-10">
+                  <input className="button" type="submit" value="Send" />
+              </div>
+              <div className="column column-20"/>
             </div>
-            <div className="column column-20"/>
           </div>
-        </div>
         </fieldset>
       </form>
     );

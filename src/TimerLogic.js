@@ -3,6 +3,7 @@ import DoubleTimer from  './DoubleTimer';
 import TimeList from './TimeList';
 import TimeSettings from './TimeSettings';
 import socketIOClient from "socket.io-client";
+import People from './People';
 import SoundBlaster from './SoundBlaster';
 import ntp from 'socket-ntp/client/ntp';
 import {isAndroid, isIOS} from "react-device-detect";
@@ -11,6 +12,13 @@ import {isAndroid, isIOS} from "react-device-detect";
 const ENDPOINT = "http://44.232.186.40:3001";
 const UI_UPDATE_INTERVAL = 10;
 
+function eq(a, b) {
+  if (a.length !== b.length) { return false; }
+  for (var i = 0; i < a.length; ++i) {
+    if (a[i].id !== b[i].id) { return false; }
+  }
+  return true;
+}
 
 class TimerLogic extends React.Component {
   constructor(props) {
@@ -42,6 +50,7 @@ class TimerLogic extends React.Component {
     this.updateTurnTimes = this.updateTurnTimes.bind(this);
     this.computeTimes = this.computeTimes.bind(this);
     this.updateInterval = this.updateInterval.bind(this);
+    this.stateUpdate = this.stateUpdate.bind(this);
 
     this.updateTime = UI_UPDATE_INTERVAL;
     this.intervalId = null;
@@ -62,6 +71,9 @@ class TimerLogic extends React.Component {
         firstTurn: 6 * 60 * 1000,
         turn: 4 * 60 * 1000,
         room: this.props.rooms,
+        redTeam: [],
+        blueTeam: [],
+        lastId: 0,
         network: false
       };
     }
@@ -82,6 +94,7 @@ class TimerLogic extends React.Component {
         data.startedTime += offset;
         data.ctm += offset;
       }
+      console.log(data);
       this.setState(data);
       this.updateInterval();
     });
@@ -109,13 +122,18 @@ class TimerLogic extends React.Component {
     if (!this.state.network) {
       if (prevState.stateId !== this.state.stateId ||
           prevState.turn !== this.state.turn ||
-          prevState.firstTurn !== this.state.firstTurn) {
+          prevState.firstTurn !== this.state.firstTurn ||
+          prevState.lastId != this.state.lastId ||
+          !eq(prevState.redTeam, this.state.redTeam) ||
+          !eq(prevState.blueTeam, this.state.blueTeam)
+        ) {
         let data = JSON.parse(JSON.stringify(this.state));
         let offset = ntp.offset();
         if (!Number.isNaN(offset)) {
           data.startedTime -= offset;
           data.ctm -= offset;
         }
+
         this.socket.emit("state-update", data);
       }
     }
@@ -381,6 +399,12 @@ class TimerLogic extends React.Component {
     return [redTime, blueTime];
   }
 
+  stateUpdate(state, forced=false) {
+    if (state.redTeam || state.blueTeam || forced) {
+      this.setState({network: false, ...state});
+    }
+  }
+
   render() {
     let settingsButton;
     if (this.state.settingsOff) {
@@ -471,6 +495,15 @@ class TimerLogic extends React.Component {
               turn={this.state.turn}
             />
         }
+        <div className="row">
+          <div className="column"><h1><span/></h1></div>
+        </div>
+        <People
+          redTeam={this.state.redTeam}
+          blueTeam={this.state.blueTeam}
+          lastId={this.state.lastId}
+          upState={this.stateUpdate}
+        />
       </div>
     );
   }
