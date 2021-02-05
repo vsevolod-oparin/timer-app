@@ -25,8 +25,14 @@ class App extends React.Component {
       gameLink: null,
       suffix: null,
     };
+
+    let prefix =
+      props.suffix && props.suffix.split('-').length == 1
+      ? "http://codenames.me/"
+      : "https://codenames.game/room/";
+
     if (props.suffix != null) {
-      this.state.gameLink = "https://codenames.game/room/" + props.suffix + '?#';
+      this.state.gameLink = prefix + props.suffix;
       this.state.suffix = props.suffix;
     }
   }
@@ -44,12 +50,10 @@ class App extends React.Component {
       return;
     }
     let last = tokens[tokens.length - 1];
-    last = last.split('?')[0];
     this.setState({
       gameLink: link,
-      suffix: last,
+      suffix: last.split('?')[0],
     })
-    window.location.href = last;
   }
 
   render() {
@@ -69,9 +73,14 @@ class App extends React.Component {
                 <GameLink href={this.state.gameLink} name={this.state.suffix} />
                 <TimerLogic linkSetter={this.setLink}/>
               </Route>
-              <Route path="/timer-app">
+              <Route exact path="/timer-app">
                 {this.state.suffix
-                  ? <Redirect to={`/timer-app/${this.state.suffix}`} />
+                  ? <Redirect
+                      to={{
+                        pathname: `/timer-app/${this.state.suffix}`,
+                        search: "?#",
+                      }}
+                    />
                   : ""
                 }
                 <LinkForm update={this.setLink} />
