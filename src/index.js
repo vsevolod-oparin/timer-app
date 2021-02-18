@@ -17,8 +17,8 @@ ReactDOM.render(
   <React.StrictMode>
     <Router>
       <Switch>
-        <Route path="/timer-app/:suffix" component={PreApp} />
-        <Route path="/timer-app" component={App} />
+        <Route path="/:suffix" component={PreApp} />
+        <Route path="/" component={App} />
       </Switch>
     </Router>
   </React.StrictMode>,

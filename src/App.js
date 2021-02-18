@@ -69,15 +69,15 @@ class App extends React.Component {
 
           <Router>
             <Switch>
-              <Route path="/timer-app/:room">
+              <Route path="/:room">
                 <GameLink href={this.state.gameLink} name={this.state.suffix} />
                 <TimerLogic linkSetter={this.setLink}/>
               </Route>
-              <Route exact path="/timer-app">
+              <Route exact path="/">
                 {this.state.suffix
                   ? <Redirect
                       to={{
-                        pathname: `/timer-app/${this.state.suffix}`,
+                        pathname: `/${this.state.suffix}`,
                         search: "?#",
                       }}
                     />
